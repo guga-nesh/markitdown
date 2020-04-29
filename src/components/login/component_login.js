@@ -4,6 +4,8 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
+import { login } from '../../redux/actions';
+import { connect } from "react-redux";
 import './component_login.css';
 
 class LoginComponent extends React.Component {
@@ -67,6 +69,7 @@ class LoginComponent extends React.Component {
             // The signed-in user info.
             var user = result.user;
             context.handleSuccess(user.displayName)
+            context.props.login({ user: user });
             // ...
         }).catch(function(error) {
             // Handle Errors here.
@@ -123,4 +126,6 @@ class LoginComponent extends React.Component {
     }
 }
 
-export default LoginComponent;
+const mapStateToProps = state => ({ user: state.user })
+
+export default connect(mapStateToProps, { login })(LoginComponent);

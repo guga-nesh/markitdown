@@ -1,7 +1,7 @@
 import { LOGIN } from "./actionTypes";
 
 export const login = content => ({
-    type: ADD_TODO,
+    type: LOGIN,
     payload: {
         user: content.user
     }
