@@ -1,0 +1,33 @@
+.individual-note {
+    display: flex;
+    flex-direction: column;
+    justify-items: auto;
+    border-style: solid;
+    border-width: 1px;
+    border-color: grey;
+    margin: 15px;
+}
+
+.notes-container {
+    max-height: 1000px;
+    overflow-y: scroll;
+}
+
+.buttonDeleteColumn {
+    padding: 4px 0px 10px 30px;
+}
+
+.border-brown {
+    border-style: solid;
+    border-color: brown;
+}
+
+.border-red {
+    border-style: solid;
+    border-color: red;
+}
+
+.border-green {
+    border-style: solid;
+    border-color: green;
+}

@@ -1,7 +1,8 @@
 class Note {
-    constructor(title, text) {
+    constructor(title, text, id = Math.floor(Math.random() * 10000)) {
         this.title = title;
         this.text = text;
+        this.id = id
     }
 
     static getNewNote() {
@@ -14,6 +15,23 @@ class Note {
 
     static getTextUpdatedNote(oldNote, text) {
         return new Note(oldNote.title, text);
+    }
+
+    static getPlaceHolderNotes() {
+        return [
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote(),
+            Note.getPlaceHolderNote()
+        ];
     }
 }
 
