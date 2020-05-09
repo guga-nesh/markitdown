@@ -5,8 +5,12 @@ class Note {
         this.id = id
     }
 
-    static getNewNote() {
+    static createNewNote() {
         return new Note("", "");
+    }
+
+    static createNewNoteWithTitle(title) {
+        return new Note(title, "");
     }
 
     static getPlaceHolderNote() {
@@ -14,7 +18,7 @@ class Note {
     }
 
     static getTextUpdatedNote(oldNote, text) {
-        return new Note(oldNote.title, text);
+        return new Note(oldNote.title, text, oldNote.id);
     }
 
     static getPlaceHolderNotes() {

@@ -1,18 +1,17 @@
-import { UPDATE_NOTE } from "../actionTypes";
-import Note from "../../model/note";
+import { UPDATE_NOTE_BEING_MODIFIED } from "../actionTypes";
 
 const initialState = {
-    ...Note.getPlaceHolderNote()
+    noteBeingModified: null
 }
 
 export default function(state = initialState, action) {
     switch(action.type) {
         
-        case UPDATE_NOTE: {
+        case UPDATE_NOTE_BEING_MODIFIED: {
             const { noteBeingModified } = action.payload;
             return {
                 ...state,
-                ...noteBeingModified
+                noteBeingModified: noteBeingModified
             }
         }
 
