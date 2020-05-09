@@ -8,18 +8,6 @@
     margin: 15px;
 }
 
-.individual-note:hover {
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    justify-items: auto;
-    border-style: solid;
-    border-width: 1px;
-    border-color: grey;
-    margin: 15px;
-    background-color: #e9e9e9;
-}
-
 .notes-container {
     max-height: 1000px;
     overflow-y: scroll;
@@ -42,10 +30,4 @@
 .border-green {
     border-style: solid;
     border-color: green;
-}
-
-.modalNewNoteButtonColumn {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
 }

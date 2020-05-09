@@ -6,7 +6,6 @@ import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import { login } from '../../redux/actions';
 import { connect } from "react-redux";
-import { Redirect } from "react-router-dom";
 import './component_login.css';
 
 class LoginComponent extends React.Component {
@@ -22,23 +21,17 @@ class LoginComponent extends React.Component {
         }
 
         this.loginWithGoogle = this.loginWithGoogle.bind(this);
-        this.handleSuccess = this.handleSuccess.bind(this);
         this.handleError = this.handleError.bind(this);
         this.closeAlert = this.closeAlert.bind(this);
 
     }
 
     render() {
-
-        if (this.props.user !== null) {
-            return <Redirect to="/home" />;
-        }
-
         return(
             <Container className="login-container">
                 <Row>
                     <Col>
-                    <Alert show={ this.state.showAlert } variant={ this.state.alertVariant }>
+                    <Alert show={this.state.showAlert} variant={this.state.alertVariant}>
                         <Alert.Heading>{ this.state.alertTitle }</Alert.Heading>
                         <p>
                             { this.state.alertMessage }
@@ -53,7 +46,7 @@ class LoginComponent extends React.Component {
                 </Row>
                 <Row style={{ marginTop: 60 }}>
                     <Col className="d-flex justify-content-center" xs={{ span: 4, offset: 4 }}>
-                        <Button onClick={ this.loginWithGoogle }>Login with Google</Button>
+                        <Button onClick={() => this.loginWithGoogle()}>Login with Google</Button>
                     </Col>
                 </Row>
             </Container>
@@ -70,32 +63,41 @@ class LoginComponent extends React.Component {
             "login_hint": "user@example.com"
         });
         var context = this;
-        firebase.auth().signInWithPopup(provider).then(result => {
+        firebase.auth().signInWithPopup(provider).then(function(result) {
             // This gives you a Google Access Token. You can use it to access the Google API.
             // var token = result.credential.accessToken;
             // The signed-in user info.
-            // var user = result.user;
-            // context.props.login({ user: user });
-            return result.user;
+            var user = result.user;
+            context.handleSuccess(user.displayName)
+            context.props.login({ user: user });
             // ...
-        }).then(user => {
-            this.handleSuccess(user);
         }).catch(function(error) {
             // Handle Errors here.
             // var errorCode = error.code;
             var errorMessage = error.message;
             context.handleError(errorMessage);
-            setTimeout(context.closeAlert, 7000);
             // The email of the user's account used.
             // var email = error.email;
             // The firebase.auth.AuthCredential type that was used.
             // var credential = error.credential;
             // ...
+        }).finally(function() {
+            setTimeout(context.closeAlert, 7000);
         });
     }
 
-    handleSuccess(user) {
-        this.props.login({ user: user });
+    handleSuccess(userName) {
+
+        const successTitle = "Login Success!"
+        const successMessage = `Welcome to MarkItDown ${userName}.`
+
+        this.setState({
+            alertTitle: successTitle,
+            alertMessage: successMessage,
+            alertVariant: "success",
+            showAlert: true
+        })
+
     }
 
     handleError(message) {
@@ -124,6 +126,6 @@ class LoginComponent extends React.Component {
     }
 }
 
-const mapStateToProps = state => ({ user: state.userState.user })
+const mapStateToProps = state => ({ user: state.user })
 
 export default connect(mapStateToProps, { login })(LoginComponent);

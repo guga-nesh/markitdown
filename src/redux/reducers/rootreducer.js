@@ -1,6 +1,6 @@
 import { combineReducers } from "redux";
-import userState from "./userState";
-import noteBeingModifiedState from "./noteBeingModifiedState";
-import noteListState from './noteListState';
+import user from "./user";
+import noteBeingModified from "./noteBeingModified";
+import noteList from './notelist';
 
-export default combineReducers({ userState, noteBeingModifiedState, noteListState});
+export default combineReducers({ user, noteBeingModified, noteList});
