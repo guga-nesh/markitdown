@@ -32,10 +32,23 @@ class NoteComponent extends React.PureComponent {
         this.setState({ text: event.target.value });
     }
 
+    async updateCurrentNoteOnFirestore() {
+        const currentNoteDocRef = window.firestore.collection('users')
+            .doc(this.props.user.username)
+            .collection('notes')
+            .doc(this.props.currentNote.id);
+        return currentNoteDocRef.set({
+            title: this.props.currentNote.title,
+            text: this.state.text
+        });
+    }
+
     saveCurrentNote() {
-        const updatedNote = Note.getTextUpdatedNote(this.props.currentNote, this.state.text);
-        this.props.updateNoteBeingModified({ noteBeingModified: updatedNote });
-        this.props.updateNoteList({ updatedNoteList: [updatedNote, ...this.props.noteList.filter(note => note.id !== updatedNote.id)]});
+        this.updateCurrentNoteOnFirestore().then(() => {
+            const updatedNote = new Note(this.props.currentNote.title, this.state.text, this.props.currentNote.id);
+            this.props.updateNoteBeingModified({ noteBeingModified: updatedNote });
+            this.props.updateNoteList({ updatedNoteList: [updatedNote, ...this.props.noteList.filter(note => note.id !== updatedNote.id)]});
+        });
     }
 
     render(){
@@ -82,6 +95,7 @@ class NoteComponent extends React.PureComponent {
 }
 
 const mapStateToProps = state => ({
+    user: state.userState.user,
     noteList: state.noteListState.noteList,
     currentNote: state.noteBeingModifiedState.noteBeingModified
 })

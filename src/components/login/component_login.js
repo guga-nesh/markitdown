@@ -4,7 +4,9 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
-import { login } from '../../redux/actions';
+import Note from '../../model/note';
+import User from '../../model/user';
+import { login, updateNoteList } from '../../redux/actions';
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import './component_login.css';
@@ -25,7 +27,7 @@ class LoginComponent extends React.Component {
         this.handleSuccess = this.handleSuccess.bind(this);
         this.handleError = this.handleError.bind(this);
         this.closeAlert = this.closeAlert.bind(this);
-
+        this.getUserDocument = this.getUserDocument.bind(this);
     }
 
     render() {
@@ -94,8 +96,47 @@ class LoginComponent extends React.Component {
         });
     }
 
+    async getUserDocument(username) {
+        const userCollectionRef = window.firestore.collection('users');
+        const existingDocument = await userCollectionRef.doc(username).get();
+        return existingDocument;
+    }
+
+    async setupAndRetrieveNewUserData(username, displayName) {
+        const userCollectionRef = window.firestore.collection('users');
+        await userCollectionRef.doc(username).set({
+            displayName: displayName
+        });
+        const newUserDocument = await userCollectionRef.doc(username).get();
+        return newUserDocument;
+    }
+
+    async getUserNotesDocs(username) {
+        return window.firestore.collection('users').doc(username).collection('notes').get()
+            .then(collectionSnapshot => collectionSnapshot);
+    }
+
     handleSuccess(user) {
-        this.props.login({ user: user });
+        const username = user.email.split("@")[0];
+        this.getUserDocument(username).then(
+            userDocument => {
+                if (!userDocument.exists) {
+                    this.setupAndRetrieveNewUserData(username, user.displayName).then((newUserDocument) => {
+                        this.props.login({ user: new User(newUserDocument.id, newUserDocument.data().displayName) });
+                    });
+                } else {
+                    this.getUserNotesDocs(username).then(userNotesDocs => {
+                        if (!userNotesDocs.empty) {
+                            const listOfNotes = userNotesDocs.docs.map(doc => {
+                                return new Note(doc.data().title, doc.data().text, doc.id);
+                            });
+                            this.props.updateNoteList({ updatedNoteList: listOfNotes });
+                        }
+                        this.props.login({ user: new User(userDocument.id, userDocument.data().displayName) });
+                    })
+                }
+            }
+        );
     }
 
     handleError(message) {
@@ -126,4 +167,4 @@ class LoginComponent extends React.Component {
 
 const mapStateToProps = state => ({ user: state.userState.user })
 
-export default connect(mapStateToProps, { login })(LoginComponent);
+export default connect(mapStateToProps, { login, updateNoteList })(LoginComponent);

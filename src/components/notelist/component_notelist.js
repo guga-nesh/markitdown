@@ -27,11 +27,22 @@ class NoteList extends React.PureComponent {
         this.activateNoteCreationModal = this.activateNoteCreationModal.bind(this);
         this.onClose = this.onClose.bind(this);
         this.onSave = this.onSave.bind(this);
+        this.updateFirestoreNoteListAndRetrieveNoteID = this.updateFirestoreNoteListAndRetrieveNoteID.bind(this);
+    }
+
+    async deleteNoteFromFirestore(noteId) {
+        const deletingNoteRef = window.firestore.collection('users')
+            .doc(this.props.user.username)
+            .collection('notes')
+            .doc(noteId);
+        return deletingNoteRef.delete();
     }
 
     deleteNote(noteId) {
-        const updatedNoteList = this.props.noteList.filter(note => note.id !== noteId);
-        this.props.updateNoteList({ updatedNoteList })
+        this.deleteNoteFromFirestore(noteId).then(() => {
+            const updatedNoteList = this.props.noteList.filter(note => note.id !== noteId);
+            this.props.updateNoteList({ updatedNoteList });
+        });
     }
 
     populateListOfNotes() {
@@ -67,11 +78,24 @@ class NoteList extends React.PureComponent {
         this.setState({ showNoteCreationModal: false });
     }
 
+    async updateFirestoreNoteListAndRetrieveNoteID(noteTitle) {
+        const database = window.firestore;
+        const currentUserDocRef = database.collection('users').doc(this.props.user.username);
+        const newNoteRef = await currentUserDocRef.collection('notes').add({
+            title: noteTitle,
+            text: ""
+        });
+        return newNoteRef.id;
+    }
+
     onSave(newNoteName) {
-        const newNote = Note.createNewNoteWithTitle(newNoteName);
-        this.props.updateNoteList({ updatedNoteList: [newNote, ...this.props.noteList] });
-        this.props.updateNoteBeingModified({ noteBeingModified: newNote });
-        this.setState({ showNoteCreationModal: false, redirectToEditNote: true });
+        this.updateFirestoreNoteListAndRetrieveNoteID(newNoteName)
+            .then(noteId => new Note(newNoteName, "", noteId))
+            .then(newNote => {
+                this.props.updateNoteList({ updatedNoteList: [newNote, ...this.props.noteList] });
+                this.props.updateNoteBeingModified({ noteBeingModified: newNote });
+                this.setState({ showNoteCreationModal: false, redirectToEditNote: true });
+            });
     }
 
     render() {
@@ -141,6 +165,7 @@ function NewNoteModalComponent(props) {
 }
 
 const mapStateToProps = state => ({
+    user: state.userState.user,
     noteList: state.noteListState.noteList
 })
 
