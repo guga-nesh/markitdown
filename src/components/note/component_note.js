@@ -8,8 +8,8 @@ import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from 'react-bootstrap/FormControl';
 import ReactMarkdown from 'react-markdown';
 import Note from '../../model/note';
-import { updateNoteBeingModified, updateNoteList } from '../../redux/actions';
-import { Redirect } from "react-router-dom";
+import { updateNoteList } from '../../redux/actions';
+import { Redirect, Prompt } from "react-router-dom";
 import { connect } from "react-redux";
 
 class NoteComponent extends React.PureComponent {
@@ -18,10 +18,12 @@ class NoteComponent extends React.PureComponent {
         super(props);
         
         this.state =  {
-            title: props.currentNote.title,
-            text: props.currentNote.text,
+            title: props.location.state.noteBeingModified.title,
+            text: props.location.state.noteBeingModified.text,
 
-            backToNoteList: false
+            backToNoteList: false,
+
+            isBlocking: false
         }
 
         this.updateText = this.updateText.bind(this);
@@ -29,64 +31,73 @@ class NoteComponent extends React.PureComponent {
     }
 
     updateText(event) {
-        this.setState({ text: event.target.value });
+        this.setState({ isBlocking: event.target.value !== this.props.location.state.noteBeingModified.text, text: event.target.value });
     }
 
     async updateCurrentNoteOnFirestore() {
         const currentNoteDocRef = window.firestore.collection('users')
             .doc(this.props.user.username)
             .collection('notes')
-            .doc(this.props.currentNote.id);
+            .doc(this.props.location.state.noteBeingModified.id);
         return currentNoteDocRef.set({
-            title: this.props.currentNote.title,
+            title: this.props.location.state.noteBeingModified.title,
             text: this.state.text
         });
     }
 
     saveCurrentNote() {
         this.updateCurrentNoteOnFirestore().then(() => {
-            const updatedNote = new Note(this.props.currentNote.title, this.state.text, this.props.currentNote.id);
-            this.props.updateNoteBeingModified({ noteBeingModified: updatedNote });
+            const updatedNote = new Note(this.props.location.state.noteBeingModified.title, this.state.text, this.props.location.state.noteBeingModified.id);
             this.props.updateNoteList({ updatedNoteList: [updatedNote, ...this.props.noteList.filter(note => note.id !== updatedNote.id)]});
+            this.setState({ isBlocking: false });
         });
     }
 
     render(){
         return (
-            <Container fluid>
-                {this.state.backToNoteList ? <Redirect to="/home"/> : null}
-                <Row style={{marginTop: '70px'}} className="d-flex justify-content-center">
-                    <Col>
-                        <Button
-                            onClick={() => { this.setState({ backToNoteList: true });
-                                this.props.updateNoteBeingModified({ noteBeingModified: null }) }}>Back</Button>
-                    </Col>
-                    <Col className="d-flex justify-content-center">
-                        <h1>
-                            {this.state.title}
-                        </h1>
-                    </Col>
-                    <Col className="d-flex justify-content-end align-items-start">
-                        <Button variant="success" onClick={this.saveCurrentNote}>Save</Button>
-                    </Col>
-                </Row>
-                <Row className="mt-4" style={{padding: '100px'}}>
-                    <Col>
-                        <InputGroup>
-                            <NoteInput defaultValue={this.state.text} onChange={this.updateText} />
-                        </InputGroup>
-                    </Col>
-                    <Col xs={{ span: 1 }} className="d-flex align-items-center justify-content-center">
-                        <h3>---></h3>
-                    </Col>
-                    <Col className="border-red">
-                        <InputGroup>
-                                <ReactMarkdown className="p-4" style={{height: '700px', resize: 'none', objectFit: 'cover'}}
-                                 source={this.state.text}></ReactMarkdown>
-                        </InputGroup>
-                    </Col>
-                </Row>
-            </Container>
+            <>
+                <Prompt
+                    when={this.state.isBlocking}
+                    message={() => "There are unsaved changes to this note.\nAre you sure you wish to leave this page?"}
+                />
+                <Container fluid>
+                    {this.state.backToNoteList ? <Redirect to="/home"/> : null}
+                    <Row style={{marginTop: '70px'}} className="d-flex justify-content-center">
+                        <Col>
+                            <Button
+                                onClick={() => this.setState({ backToNoteList: true },
+                                    () => this.state.isBlocking ? this.setState({ backToNoteList: false }) : null )}
+                            >
+                                Back
+                            </Button>
+                        </Col>
+                        <Col className="d-flex justify-content-center">
+                            <h1>
+                                {this.state.title}
+                            </h1>
+                        </Col>
+                        <Col className="d-flex justify-content-end align-items-start">
+                            <Button variant="success" onClick={this.saveCurrentNote}>Save</Button>
+                        </Col>
+                    </Row>
+                    <Row className="mt-4" style={{padding: '100px'}}>
+                        <Col>
+                            <InputGroup>
+                                <NoteInput defaultValue={this.state.text} onChange={this.updateText} />
+                            </InputGroup>
+                        </Col>
+                        <Col xs={{ span: 1 }} className="d-flex align-items-center justify-content-center">
+                            <h3>---></h3>
+                        </Col>
+                        <Col className="border-red">
+                            <InputGroup>
+                                    <ReactMarkdown className="p-4" style={{height: '700px', resize: 'none', objectFit: 'cover'}}
+                                    source={this.state.text}></ReactMarkdown>
+                            </InputGroup>
+                        </Col>
+                    </Row>
+                </Container>
+            </>
         );
     }
 
@@ -94,11 +105,10 @@ class NoteComponent extends React.PureComponent {
 
 const mapStateToProps = state => ({
     user: state.userState.user,
-    noteList: state.noteListState.noteList,
-    currentNote: state.noteBeingModifiedState.noteBeingModified
+    noteList: state.noteListState.noteList
 })
 
-export default connect(mapStateToProps, { updateNoteBeingModified, updateNoteList })(NoteComponent);
+export default connect(mapStateToProps, { updateNoteList })(NoteComponent);
 
 class NoteInput extends React.PureComponent {
     constructor(props) {

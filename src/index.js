@@ -29,8 +29,7 @@ ReactDOM.render(
             <NoteListComponent />
           </Route>
 
-          <Route path="/edit">
-            <NoteEditComponent />
+          <Route path="/edit" render={routeProps => <NoteEditComponent {...routeProps}/>}>
           </Route>
 
           <Route>

@@ -1,4 +1,4 @@
-import { LOGIN, UPDATE_NOTE_BEING_MODIFIED, UPDATE_NOTE_LIST, SELECT_NOTE, LOGOUT } from "./actionTypes";
+import { LOGIN, UPDATE_NOTE_LIST, SELECT_NOTE, LOGOUT } from "./actionTypes";
 
 export const login = content => ({
     type: LOGIN,
@@ -11,13 +11,6 @@ export const selectNote = content => ({
     type: SELECT_NOTE,
     payload: {
         selectedNote: content.selectedNote
-    }
-});
-
-export const updateNoteBeingModified = content => ({
-    type: UPDATE_NOTE_BEING_MODIFIED,
-    payload: {
-        noteBeingModified: content.noteBeingModified
     }
 });
 

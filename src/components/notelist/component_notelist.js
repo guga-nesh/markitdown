@@ -8,7 +8,7 @@ import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from 'react-bootstrap/FormControl';
 import './component_notelist.css';
 import { connect } from "react-redux";
-import { updateNoteList, updateNoteBeingModified, logout } from "../../redux/actions";
+import { updateNoteList, logout } from "../../redux/actions";
 import Note from '../../model/note';
 import { Redirect } from 'react-router-dom';
 
@@ -20,7 +20,8 @@ class NoteList extends React.PureComponent {
         this.state = {
             showNoteCreationModal: false,
             redirectToEditNote: false,
-            redirectToLogin: false
+            redirectToLogin: false,
+            noteToBeModified: null
         }
 
         this.populateListOfNotes = this.populateListOfNotes.bind(this);
@@ -49,7 +50,7 @@ class NoteList extends React.PureComponent {
         return this.props.noteList.map(note => {
             return (
                 <Container key={note.id} className="individual-note"
-                    onClick={() => {this.props.updateNoteBeingModified({ noteBeingModified: note }); this.setState({ redirectToEditNote: true })}}>
+                    onClick={ () => this.setState({ noteToBeModified: note, redirectToEditNote: true }) }>
                     <Row>
                         <Col sm="9" >
                             <h2>{note.title}</h2>
@@ -93,15 +94,14 @@ class NoteList extends React.PureComponent {
             .then(noteId => new Note(newNoteName, "", noteId))
             .then(newNote => {
                 this.props.updateNoteList({ updatedNoteList: [newNote, ...this.props.noteList] });
-                this.props.updateNoteBeingModified({ noteBeingModified: newNote });
-                this.setState({ showNoteCreationModal: false, redirectToEditNote: true });
+                this.setState({  noteToBeModified: newNote, showNoteCreationModal: false, redirectToEditNote: true });
             });
     }
 
     render() {
         return (
             <>
-                { this.state.redirectToEditNote ? <Redirect to="/edit" /> : null }
+                { this.state.redirectToEditNote ? <Redirect  to={ { pathname: "/edit", state: { noteBeingModified: this.state.noteToBeModified }} } /> : null }
                 { this.state.redirectToLogin ? <Redirect to="/login" /> : null }
                 <NewNoteModalComponent show={this.state.showNoteCreationModal}
                     onClose={this.onClose} onSave={this.onSave} />
@@ -169,4 +169,4 @@ const mapStateToProps = state => ({
     noteList: state.noteListState.noteList
 })
 
-export default connect(mapStateToProps, { updateNoteList, updateNoteBeingModified, logout })(NoteList);
+export default connect(mapStateToProps, { updateNoteList, logout })(NoteList);
