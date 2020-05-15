@@ -53,6 +53,12 @@ class NoteComponent extends React.PureComponent {
         });
     }
 
+    componentDidUpdate() {
+        // Leaving this on Permanently at the moment till
+        // route protection is implemented.
+        window.onbeforeunload = () => true;
+    }
+
     render(){
         return (
             <>
