@@ -53,7 +53,9 @@ class NoteList extends React.PureComponent {
                     onClick={ () => this.setState({ noteToBeModified: note, redirectToEditNote: true }) }>
                     <Row>
                         <Col sm="9" >
-                            <h2>{note.title}</h2>
+                            <div className="titleContainer">
+                                {note.title}
+                            </div>
                         </Col>
                         <Col className="buttonDeleteColumn">
                             <Button variant="danger" onClick={e => { e.stopPropagation(); this.deleteNote(note.id); }}>
@@ -63,7 +65,9 @@ class NoteList extends React.PureComponent {
                     </Row>
                     <Row>
                         <Col>
-                            <p>{note.text}</p>
+                            <div className="textContainer">
+                                {note.text}
+                            </div>    
                         </Col>
                     </Row>
                 </Container>

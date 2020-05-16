@@ -26,7 +26,7 @@
 }
 
 .buttonDeleteColumn {
-    padding: 4px 0px 10px 30px;
+    padding: 4px 0px 10px 44px;
 }
 
 .border-brown {
@@ -48,4 +48,21 @@
     display: flex;
     flex-direction: row;
     justify-content: flex-end;
+}
+
+.titleContainer {
+    overflow: hidden; 
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 350px;
+    font-size: 37px;
+    font-weight: 550;
+}
+
+.textContainer {
+    max-height: 100px; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
+    max-width: 500px;
 }
